@@ -1,6 +1,6 @@
 library(dplyr)
 
-best <- function(state, outcome)
+rankhospital <- function(state, outcome, num = "best")
 {
     ## Read CSV file
     datahosp <- read.csv("outcome-of-care-measures.csv", colClasses="character")
@@ -42,20 +42,35 @@ best <- function(state, outcome)
         colnum <- 23
     }
 
-    
+    ## Grab all the outcome data
     outcome_data1 <- subset(datahosp, State == state & datahosp[,colnum] != "Not Available")
-    #print(outcome_data1)
 
-    minimum_mortalityrate <- min(as.numeric(outcome_data1[,colnum]))
-    hosp_mini_mortalityrate <- subset(outcome_data1,as.numeric(outcome_data1[,colnum]) == minimum_mortalityrate)
-    return(hosp_mini_mortalityrate[,2])
 
-    #mortality_rates <- datahosp[,c(2,7,columnindex)]
-    #names(mortality_rates)[3:5] <- c("heart attack", "heart failure", "pneumonia")
-    ## Force the mortality rates numeric
-    #mortality_rates[,3:5] <- sapply(mortality_rates[,3:5],as.numeric)
-    ## Need to transform NA values to zero
-    #mortality_rates[mortality_rates == 0] <- NA
-    ## Let's start the selection process!
+    if (num == "best")
+    {
+        rank <- 1
+    }
+    else if (num == "worst")
+    {
+        rank <- length(outcome_data1[,colnum])
+    }
+    else if (num > length(outcome_data1[,colnum]))
+    {
+        return(NA)
+    }
+    else
+    {
+        rank <- num
+    }
 
+
+    ## Sort the data in terms of ascending order of the selected mortality column
+    ## This is done in ascending order
+    mortalityrate_ranked <- sort(as.numeric(outcome_data1[,colnum]))
+    #hosp_mortalityrate_ranked <- subset(outcome_data1,as.numeric(outcome_data1[,colnum]) == mortalityrate_ranked)]
+    hosp_mortalityrate_ranked <- subset(outcome_data1,
+                                    as.numeric(outcome_data1[,colnum]) == mortalityrate_ranked[rank]
+    )
+    # Return element in 1st row and 2nd column of data frame (which is the hospital name)
+    return(hosp_mortalityrate_ranked[1,2])
 }
