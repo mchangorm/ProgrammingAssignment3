@@ -1,6 +1,6 @@
 library(dplyr)
 
-rankhospital <- function(state, outcome, num = "best")
+rankall <- function(outcome, num = "best")
 {
     ## Read CSV file
     datahosp <- read.csv("outcome-of-care-measures.csv", colClasses="character")
@@ -11,13 +11,7 @@ rankhospital <- function(state, outcome, num = "best")
     ## Get all states defined in CSV file
     validstates <- unique(datahosp[["State"]])
 
-    ## Check if state entered is valid 
-    if (!state %in% validstates)
-    {
-        stop("Invalid state entered")
-    }
-
-   ## Check that the outcomes conform to one of 
+    ## Check that the outcomes conform to one of 
    ## “heart attack”, “heart failure”, or “pneumonia”.
     if (!outcome %in% c("heart attack", "heart failure","pneumonia"))
     {
@@ -43,7 +37,7 @@ rankhospital <- function(state, outcome, num = "best")
     }
 
     ## Grab all the outcome data
-    outcome_data1 <- subset(datahosp, State == state & datahosp[,colnum] != "Not Available")
+    outcome_data1 <- subset(datahosp, datahosp[,colnum] != "Not Available")
 
     if (num == "best")
     {
@@ -59,7 +53,7 @@ rankhospital <- function(state, outcome, num = "best")
     }
     else
     {
-        rank <- num
+        rank <- 1:num
     }
 
     ## Sort the data in terms of ascending order of the selected mortality column
@@ -68,7 +62,14 @@ rankhospital <- function(state, outcome, num = "best")
     #hosp_mortalityrate_ranked <- subset(outcome_data1,as.numeric(outcome_data1[,colnum]) == mortalityrate_ranked)]
     hosp_mortalityrate_ranked <- subset(outcome_data1,
                                     as.numeric(outcome_data1[,colnum]) == mortalityrate_ranked[rank]
-    )
-    # Return element in 1st row and 2nd column of data frame (which is the hospital name)
-    return(hosp_mortalityrate_ranked[1,2])
+                    )
+    #str(hosp_mortalityrate_ranked)
+
+
+    rankdata <- data.frame(hosp_mortalityrate_ranked[,2],hosp_mortalityrate_ranked[,7])
+    colnames(rankdata) <- c("hospital","state")
+    return(rankdata)
+
+ 
 }
+
