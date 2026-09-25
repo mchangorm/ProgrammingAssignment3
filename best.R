@@ -1,4 +1,4 @@
-#library(data.table)
+require(plyr)
 
 best <- function(state, outcome)
 {
@@ -24,9 +24,29 @@ best <- function(state, outcome)
         stop("Invalid outcome")
     }
 
-    # Initialise those not available rates to 0
-    datahosp[datahosp == "Not Available"] <- 0
+    ## We need to grab all columns with the name 30 day mortality
+    ## and return the index of the column
+    columnindex <- c(grep("^Hospital.*Death*", names(datahosp)))
+    #print(columnindex)
 
-    
+    mortality_rates <- datahosp[,c(2,7,columnindex)]
+    #head(mortality_rates)
+
+    ## Force the mortality rates numeric
+    mortality_rates[,3:5] <- sapply(mortality_rates[,3:5],as.numeric)
+
+    ## Need to transform NA values to zero
+    ##mortality_rates[mortality_rates == 0] <- NA
+
+    ## Let's start the selection process!
+    selected_state <- mortality_rates[mortality_rates$State == state,]
+    head(selected_state)
+
+    ## Once selected, let's order
+    ## Use the arrange function in dlypr package to sort
+    ## by the outcome. Also, push na values last
+    selection_ordered <- arrange(selected_state, selected_state[,outcome],Hospital.Name)
+    head(selection_ordered)
+
 
 }
