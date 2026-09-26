@@ -53,23 +53,27 @@ rankall <- function(outcome, num = "best")
     }
     else
     {
-        rank <- 1:num
+        rank <- num
     }
 
-    ## Sort the data in terms of ascending order of the selected mortality column
-    ## This is done in ascending order
-    mortalityrate_ranked <- sort(as.numeric(outcome_data1[,colnum]))
-    #hosp_mortalityrate_ranked <- subset(outcome_data1,as.numeric(outcome_data1[,colnum]) == mortalityrate_ranked)]
-    hosp_mortalityrate_ranked <- subset(outcome_data1,
-                                    as.numeric(outcome_data1[,colnum]) == mortalityrate_ranked[rank]
-                    )
-    #str(hosp_mortalityrate_ranked)
+    # Split the data frame into different lists of data frame, 1 for each state
+    state_list <- split(outcome_data1,outcome_data1$State)
 
+    # Loop over each data frame. Sort and extract rank
+    results_list <- lapply(state_list, function(state_df)
+                     {
+                        ordered_results <- state_df[order(state_df[,colnum],state_df$State),]
+                        return(ordered_results[rank,"hospital"])
+                     }
 
-    rankdata <- data.frame(hosp_mortalityrate_ranked[,2],hosp_mortalityrate_ranked[,7])
-    colnames(rankdata) <- c("hospital","state")
-    return(rankdata)
+    )
 
- 
+    results_list
+    output <- data.frame(
+        hospital <- unlist(results_list),
+        state <- names(results_list),
+        stringsAsFactors = FALSE
+    )
+
+    return(output)
 }
-
